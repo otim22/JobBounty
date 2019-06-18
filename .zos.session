@@ -1,0 +1,6 @@
+{
+  "network": "development",
+  "from": "0x81FA057e7E3E1aa246D43EE74E79e606B9fF1c28",
+  "timeout": "3600",
+  "expires": "2019-06-18T08:51:19.677Z"
+}

@@ -1,0 +1,8 @@
+{
+  "zosversion": "2.2",
+  "name": "JobBounty",
+  "version": "0.1.0",
+  "contracts": {
+    "JobBounty": "JobBounty"
+  }
+}

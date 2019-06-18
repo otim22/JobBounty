@@ -1,0 +1,185 @@
+{
+  "contracts": {
+    "JobBounty": {
+      "address": "0xE058f8a78B7aBC8a29a7B6feC3002d1ed3Ca97a8",
+      "constructorCode": "608060405234801561001057600080fd5b5061185f806100206000396000f3fe",
+      "bodyBytecodeHash": "7b4edfec04ce2dad6af88b377a62b58596522675d272db6ed23bea14ba8cbf7d",
+      "localBytecodeHash": "141afacab0887bf34a9df2b89a4276e77ef96eb3047c1ec03df72005ec65702c",
+      "deployedBytecodeHash": "141afacab0887bf34a9df2b89a4276e77ef96eb3047c1ec03df72005ec65702c",
+      "types": {
+        "t_bool": {
+          "id": "t_bool",
+          "kind": "elementary",
+          "label": "bool"
+        },
+        "t_uint256": {
+          "id": "t_uint256",
+          "kind": "elementary",
+          "label": "uint256"
+        },
+        "t_array:50<t_uint256>": {
+          "id": "t_array:50<t_uint256>",
+          "valueType": "t_uint256",
+          "length": "50",
+          "kind": "array",
+          "label": "uint256[50]"
+        },
+        "t_struct<JobBounty.BountyDetail>": {
+          "id": "t_struct<JobBounty.BountyDetail>",
+          "kind": "struct",
+          "label": "JobBounty.BountyDetail",
+          "members": [
+            {
+              "label": "issuer",
+              "astId": 10,
+              "type": "t_address_payable",
+              "src": "518:22:0"
+            },
+            {
+              "label": "deadline",
+              "astId": 12,
+              "type": "t_uint256",
+              "src": "550:13:0"
+            },
+            {
+              "label": "description",
+              "astId": 14,
+              "type": "t_string",
+              "src": "573:18:0"
+            },
+            {
+              "label": "status",
+              "astId": 16,
+              "type": "t_enum<JobBounty.BountyStatus>",
+              "src": "601:19:0"
+            },
+            {
+              "label": "amount",
+              "astId": 18,
+              "type": "t_uint256",
+              "src": "630:11:0"
+            }
+          ]
+        },
+        "t_address_payable": {
+          "id": "t_address_payable",
+          "kind": "elementary",
+          "label": "address payable"
+        },
+        "t_string": {
+          "id": "t_string",
+          "kind": "elementary",
+          "label": "string"
+        },
+        "t_enum<JobBounty.BountyStatus>": {
+          "id": "t_enum<JobBounty.BountyStatus>",
+          "kind": "enum",
+          "label": "JobBounty.BountyStatus",
+          "members": [
+            "CREATED",
+            "ACCEPTED",
+            "CANCELLED"
+          ]
+        },
+        "t_array:dyn<t_struct<JobBounty.BountyDetail>>": {
+          "id": "t_array:dyn<t_struct<JobBounty.BountyDetail>>",
+          "valueType": "t_struct<JobBounty.BountyDetail>",
+          "length": "dyn",
+          "kind": "array",
+          "label": "JobBounty.BountyDetail[]"
+        },
+        "t_struct<JobBounty.Success>": {
+          "id": "t_struct<JobBounty.Success>",
+          "kind": "struct",
+          "label": "JobBounty.Success",
+          "members": [
+            {
+              "label": "accepted",
+              "astId": 21,
+              "type": "t_bool",
+              "src": "694:13:0"
+            },
+            {
+              "label": "submitter",
+              "astId": 23,
+              "type": "t_address_payable",
+              "src": "715:25:0"
+            },
+            {
+              "label": "data",
+              "astId": 25,
+              "type": "t_string",
+              "src": "748:11:0"
+            }
+          ]
+        },
+        "t_array:dyn<t_struct<JobBounty.Success>>": {
+          "id": "t_array:dyn<t_struct<JobBounty.Success>>",
+          "valueType": "t_struct<JobBounty.Success>",
+          "length": "dyn",
+          "kind": "array",
+          "label": "JobBounty.Success[]"
+        },
+        "t_mapping<t_array:dyn<t_struct<JobBounty.Success>>>": {
+          "id": "t_mapping<t_array:dyn<t_struct<JobBounty.Success>>>",
+          "valueType": "t_array:dyn<t_struct<JobBounty.Success>>",
+          "label": "mapping(key => JobBounty.Success[])",
+          "kind": "mapping"
+        }
+      },
+      "storage": [
+        {
+          "contract": "Initializable",
+          "path": "zos-lib/contracts/Initializable.sol",
+          "label": "initialized",
+          "astId": 505,
+          "type": "t_bool",
+          "src": "757:24:2"
+        },
+        {
+          "contract": "Initializable",
+          "path": "zos-lib/contracts/Initializable.sol",
+          "label": "initializing",
+          "astId": 507,
+          "type": "t_bool",
+          "src": "876:25:2"
+        },
+        {
+          "contract": "Initializable",
+          "path": "zos-lib/contracts/Initializable.sol",
+          "label": "______gap",
+          "astId": 563,
+          "type": "t_array:50<t_uint256>",
+          "src": "1951:29:2"
+        },
+        {
+          "contract": "JobBounty",
+          "path": "contracts/JobBounty.sol",
+          "label": "bountyDetails",
+          "astId": 29,
+          "type": "t_array:dyn<t_struct<JobBounty.BountyDetail>>",
+          "src": "799:35:0"
+        },
+        {
+          "contract": "JobBounty",
+          "path": "contracts/JobBounty.sol",
+          "label": "successes",
+          "astId": 34,
+          "type": "t_mapping<t_array:dyn<t_struct<JobBounty.Success>>>",
+          "src": "840:36:0"
+        }
+      ],
+      "warnings": {
+        "hasConstructor": false,
+        "hasSelfDestruct": false,
+        "hasDelegateCall": false,
+        "hasInitialValuesInDeclarations": false,
+        "uninitializedBaseContracts": []
+      }
+    }
+  },
+  "solidityLibs": {},
+  "proxies": {},
+  "zosversion": "2.2",
+  "version": "0.1.0"
+}

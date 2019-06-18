@@ -1,12 +1,15 @@
 pragma solidity ^0.5.0;
 
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "zos-lib/contracts/Initializable.sol";
+
 /**
 * @title JobBounty
 * @author Otim Fredrick- <fredrickot@gmail.com>
 * @dev A smart contract which allows someone [a poster] to post work in ETH linked with description
 * And anyone [submitter] can submit a solution as evidence of fulfillment to the work.
 */
-contract JobBounty {
+contract JobBounty is Initializable, Ownable {
     
     /*
     * Enum
@@ -36,7 +39,8 @@ contract JobBounty {
     /**
     * @dev Contructor
     */
-    constructor() public  {}
+    function initialize() public initializer {
+    }
     
     /**
     * @dev issueBounty(): instantiates a new bountyDetail
@@ -95,6 +99,7 @@ contract JobBounty {
     */
     function cancelBounty(uint _bountyId)
       public
+      onlyOwner
       bountyExists(_bountyId)
       onlyIssuer(_bountyId)
       hasStatus(_bountyId, BountyStatus.CREATED)

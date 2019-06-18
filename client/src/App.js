@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import JobBountyContract from "./contracts/JobBounty.json";
 import getWeb3 from "./utils/getWeb3";
+// eslint-disable-next-line
+import { setJSON, getJSON } from './utils/IPFS.js';
 
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
@@ -14,6 +16,9 @@ import Jumbotron from 'react-bootstrap/Jumbotron';
 
 import "./App.css";
 
+const etherscanBaseUrl = "https://rinkeby.etherscan.io";
+const ipfsBaseUrl = "https://ipfs.infura.io/ipfs";
+
 class App extends Component {
     constructor(props) {
         super(props)
@@ -22,14 +27,16 @@ class App extends Component {
             jobBountiesInstance: undefined,
             bountyAmount: undefined,
             bountyData: undefined,
+            bountyDescription: undefined,
             bountyDeadline: undefined,
             etherscanLink: "https://rinkeby.etherscan.io",
+            bounties: [],
             account: null,
             web3: null
         }
 
-        // this.handleIssueBounty = this.handleIssueBounty.bind(this)
-        // this.handleChange = this.handleChange.bind(this)
+        this.handleIssueBounty = this.handleIssueBounty.bind(this)
+        this.handleChange = this.handleChange.bind(this)
     }
 
     componentDidMount = async() => {
@@ -61,6 +68,76 @@ class App extends Component {
             console.error(error);
         }
     };
+
+    handleChange(event)
+    {
+        switch(event.target.name) {
+            case "bountyData":
+                this.setState({"bountyData": event.target.value});
+                break;
+            case "bountyDescription":
+                this.setState({"bountyDescription": event.target.value});
+                break;
+            case "bountyDeadline":
+                this.setState({"bountyDeadline": event.target.value});
+                break;
+            case "bountyAmount":
+                this.setState({"bountyAmount": event.target.value});
+                break;
+            default:
+                break;
+        }
+    }
+
+    async handleIssueBounty(event)
+    {
+        if (typeof this.state.jobBountiesInstance !== 'undefined') {
+            event.preventDefault();
+            const ipfsHash = await setJSON({ bountyData: this.state.bountyData });
+            let result = await this.state.jobBountiesInstance.methods.issueBounty(ipfsHash, this.state.bountyDescription, this.state.bountyDeadline).send({from: this.state.account, value: this.state.web3.utils.toWei(this.state.bountyAmount, 'ether')})
+            this.setLastTransactionDetails(result)
+        }
+    }
+
+    setLastTransactionDetails(result)
+    {
+        if(result.tx !== 'undefined')
+        {
+            this.setState({etherscanLink: etherscanBaseUrl+"/tx/"+result.tx});
+        }
+        else
+        {   
+            this.setState({etherscanLink: etherscanBaseUrl});
+        }
+    }
+
+    addEventListener(component) 
+    {
+
+        this.state.jobBountiesInstance.events.BountyIssued({fromBlock: 0, toBlock: 'latest'})
+        .on('data', async function(event){
+        //First get the data from ipfs and add it to the event
+        var ipfsJson = {}
+        try{
+            ipfsJson = await getJSON(event.returnValues.data);
+        }
+        catch(e) {}
+
+        if(ipfsJson.bountyData !== undefined)
+        {
+            event.returnValues['bountyData'] = ipfsJson.bountyData;
+            event.returnValues['ipfsData'] = ipfsBaseUrl+"/"+event.returnValues.data;
+        }
+        else {
+            event.returnValues['ipfsData'] = "none";
+            event.returnValues['bountyData'] = event.returnValues['data'];
+        }
+
+        var newBountiesArray = component.state.bounties.slice()
+        newBountiesArray.push(event.returnValues)
+        component.setState({ bounties: newBountiesArray })
+        }).on('error', console.error);
+    }
 
     render() {
         if (!this.state.web3) {
@@ -121,7 +198,8 @@ class App extends Component {
 
             <
             Form.Group as = { Row }
-            controlId = "issueBounty" >
+            controlId = "issueBounty" 
+            onSubmit={this.handleIssueBounty}>
             <
             Form.Label column sm = "2" >
             Issue Bounty <
@@ -129,6 +207,9 @@ class App extends Component {
             Col sm = "10" >
             <
             Form.Control type = "issueBounty"
+            name="issueBounty"
+            value={this.state.bountyData}
+            onChange={this.handleChange}
             placeholder = "Issue a job bounty" / >
             <
             /Col> < /
@@ -144,7 +225,9 @@ class App extends Component {
             Col sm = "10" >
             <
             Form.Control type = "text"
-            placeholder = "Description of the job bounty" / >
+            placeholder = "Description of the job bounty" 
+            value={this.state.bountyDescription}
+            onChange={this.handleChange}/ >
             <
             /Col> < /
             Form.Group >
@@ -159,7 +242,9 @@ class App extends Component {
             Col sm = "10" >
             <
             Form.Control type = "text"
-            placeholder = "Time in seconds since epoch" / >
+            placeholder = "Time in seconds since epoch" 
+            value={this.state.bountyDeadline}
+            onChange={this.handleChange}/ >
             <
             /Col> < /
             Form.Group >
@@ -174,7 +259,9 @@ class App extends Component {
             Col sm = "10" >
             <
             Form.Control type = "text"
-            placeholder = "Amount of bounty" / > < /Col>< /
+            placeholder = "Amount of bounty" 
+            value={this.state.bountyAmount}
+            onChange={this.handleChange}/ > < /Col>< /
             Form.Group >
 
             <
@@ -206,9 +293,8 @@ class App extends Component {
             th isKey dataField = 'bounty_id' > ID < /th> <
             th dataField = 'issuer' > Issuer < /th> <
             th dataField = 'amount' > Amount < /th> <
-            th dataField = 'data' > Bounty Description < /th> < /
-            tr > <
-            /thead> <
+            th dataField = 'data' > Bounty Description < /th> <
+            th dataField = 'data' > Action < /th> < /tr > </thead> <
             tbody >
             <
             tr >
@@ -216,22 +302,13 @@ class App extends Component {
             td > 0 < /td> <
             td > 0x1234566 < /td> <
             td > 1000000000 < /td> <
-            td > Saving data to ipfs < /td> < /
-            tr > <
-            tr >
+            td > Saving data to ipfs < /td> 
             <
-            td > 1 < /td> <
-            td > 0x2134566 < /td> <
-            td > 2000000000 < /td> <
-            td > Documentation of app < /td> < /
-            tr >
-            <
-            tr >
-            <
-            td > 2 < /td> <
-            td > 0x3134566 < /td> <
-            td > 6000000000 < /td> <
-            td > Test the blockchain mulla < /td> < /
+            td > 
+            <Button variant="secondary">View</Button>
+            <Button variant="warning">Update</Button>
+            <Button variant="danger">Delete</Button>
+            < /td>< /
             tr > < /
             tbody > < /
             Table > <
