@@ -1,6 +1,5 @@
 pragma solidity ^0.5.0;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "zos-lib/contracts/Initializable.sol";
 
 /**
@@ -9,15 +8,15 @@ import "zos-lib/contracts/Initializable.sol";
 * @dev A smart contract which allows someone [a poster] to post work in ETH linked with description
 * And anyone [submitter] can submit a solution as evidence of fulfillment to the work.
 */
-contract JobBounty is Initializable, Ownable {
-    
-    /*
-    * Enum
-    */
+contract JobBounty is Initializable {
+
+    bool private stopped = false;
+    address private owner;
+
+    /** Status of bounty */
     enum BountyStatus { CREATED, ACCEPTED, CANCELLED }
-    /*
-    * Structs
-    */
+    
+    /** Bounty details */
     struct BountyDetail {
         address payable issuer;
         uint deadline;
@@ -25,15 +24,18 @@ contract JobBounty is Initializable, Ownable {
         BountyStatus status;
         uint amount;         // in wei
     }
+
+    /** Detail of Successful bounty */
     struct Success {
       bool accepted;
       address payable submitter;
       string data;
     }
-    /*
-    * Storage
-    */
+    
+    /** Storage for the bounty */
     BountyDetail[] public bountyDetails;
+
+    /** Storage for the bounty successes */
     mapping(uint => Success[]) successes;
     
     /**
@@ -41,14 +43,26 @@ contract JobBounty is Initializable, Ownable {
     */
     function initialize() public initializer {
     }
+
+    /** Suspend the contract incase of bug  */
+    function toggleContractActive() isAdmin public
+    {
+        stopped = !stopped;
+    }
     
     /**
     * @dev issueBounty(): instantiates a new bountyDetail
-    * @param _deadline the unix timestamp after which fulfillments will no longer be accepted
+    * @param _deadline the deadline for the bounty
     * @param _description the description of the bountyDetail
+    * Can cancel sending funds incase bug with modifier stopInEmergency
     */
     function issueBounty(string memory _description, uint64 _deadline)
-        public payable hasValue() validateDeadline(_deadline) returns(uint)
+        public 
+        stopInEmergency 
+        payable 
+        hasValue() 
+        validateDeadline(_deadline) 
+        returns(uint)
     {
         bountyDetails.push(BountyDetail(msg.sender, _deadline, _description, BountyStatus.CREATED, msg.value));
         emit BountyIssued(bountyDetails.length - 1, msg.sender, msg.value, _description);
@@ -56,9 +70,9 @@ contract JobBounty is Initializable, Ownable {
     }
     
     /**
-    * @dev fulfillBounty(): submit a fulfillment for the given bounty
+    * @dev fulfillBounty(): send a submission for the given bounty
     * @param _bountyId the index of the bounty to be fufilled
-    * @param _description the ipfs hash which contains evidence of the fufillment
+    * @param _description the ipfs hash which contains evidence of the submission
     */
     function fulfillBounty(uint _bountyId, string memory _description)
         public
@@ -72,19 +86,21 @@ contract JobBounty is Initializable, Ownable {
     }
     
     /**
-    * @dev acceptFulfillment(): accept a given fulfillment
+    * @dev acceptFulfillment(): accept a given submission
     * @param _bountyId the index of the bounty
-    * @param _fulfillmentId the index of the fulfillment being accepted
+    * @param _fulfillmentId the index of the submission being accepted
+    * Can fulfil submission in crucial state of the system
     */
     function acceptFulfillment(uint _bountyId, uint _fulfillmentId)
       public
+      onlyInEmergency
       bountyExists(_bountyId)
       fulfillmentExists(_bountyId, _fulfillmentId)
       onlyIssuer(_bountyId)
       hasStatus(_bountyId, BountyStatus.CREATED)
       fulfillmentNotYetAccepted(_bountyId, _fulfillmentId)
     {
-         successes[_bountyId][_fulfillmentId].accepted = true;
+        successes[_bountyId][_fulfillmentId].accepted = true;
         bountyDetails[_bountyId].status = BountyStatus.ACCEPTED;
         successes[_bountyId][_fulfillmentId].submitter.transfer(bountyDetails[_bountyId].amount);
         emit FulfillmentAccepted(
@@ -99,7 +115,6 @@ contract JobBounty is Initializable, Ownable {
     */
     function cancelBounty(uint _bountyId)
       public
-      onlyOwner
       bountyExists(_bountyId)
       onlyIssuer(_bountyId)
       hasStatus(_bountyId, BountyStatus.CREATED)
@@ -109,9 +124,7 @@ contract JobBounty is Initializable, Ownable {
       emit BountyCancelled(_bountyId, msg.sender, bountyDetails[_bountyId].amount);
     }
     
-    /**
-    * Modifiers
-    */
+    /** Modifiers */
     modifier validateDeadline(uint _newDeadline) {
         require(_newDeadline > now, "Deadline should be in the future");
         _;
@@ -148,10 +161,18 @@ contract JobBounty is Initializable, Ownable {
         require(_fulfillmentId < successes[_bountyId].length, "The fulfillment already exists");
         _;
     }
+
+    /**circuit breaker modifier */
+    modifier isAdmin() {
+        if(msg.sender != owner) {
+            revert();
+        }
+        _;
+    }
+    modifier stopInEmergency { if (!stopped) _; }
+    modifier onlyInEmergency { if (stopped) _; }
     
-    /**
-    * Events
-    */
+    /** Events */
     event BountyIssued(uint bounty_id, address issuer, uint amount, string description);
     event BountyFulfilled(uint bounty_id, address fulfiller, uint fulfillment_id, string description);
     event FulfillmentAccepted(uint bounty_id, address issuer, address fulfiller, uint indexed fulfillment_id, uint amount);

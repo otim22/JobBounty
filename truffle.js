@@ -9,10 +9,14 @@ if (fs.existsSync('secrets.json')) {
 }
 
 module.exports = {
+
+    plugins: ["truffle-security"],
+
     // See <http://truffleframework.com/docs/advanced/configuration>
     // to customize your Truffle configuration!
     contracts_build_directory: path.join(__dirname, "client/src/contracts"),
 
+    plugins: ["truffle-security"],
     networks: {
         development: {
             network_id: "*",
