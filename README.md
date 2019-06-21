@@ -4,7 +4,7 @@ This is a bounty dApp where people can post or submit work.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. Run to compile the contract but ensure ganache is running in the background for local testing.
 
 ```
 Truffle compile
@@ -78,7 +78,6 @@ The smart contract and frontend application is hosted on etherscan, github and h
 
 * **Otim Fredrick** - *Initial work* - [JobBounty](https://github.com/otim22/JobBounty)
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
 ## License
 
@@ -89,4 +88,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 * [Consensys Academy](https://consensys.net/academy/) - For Delivering the course
 * [African Blockchain Allaince](https://afriblockchain.org/) - For mediating the course
 * [Cryptosavannah](https://cryptosavannah.com/) - For the logistics and support.
-* My memtor @joshorig - For the priceless information ised shared.
+* My mentor @joshorig - For the priceless information he shared.
